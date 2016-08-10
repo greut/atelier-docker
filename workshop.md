@@ -1,10 +1,20 @@
 ---
 title: Atelier Docker
 author:
- - Yoan Blanc
+ - Yoan Blanc <code>yoan@dosimple.ch</code>
 date: 2016-08-15
 institute: HE-Arc
 lang: fr
+---
+
+![](docker.png)
+
+<aside class="notes">
+[Docker](https://docker.com/) cʼest un système
+dʼorchestration de conteneurs, sous [GNU/Linux](https://www.kernel.org/)
+propulsé par le langage de programmation [Go](https://golang.org/).
+</aside>
+
 ---
 
 # Préparatifs
@@ -41,6 +51,8 @@ docker run --interactive \
            --name demo \
            alpine:3.4 \
            /bin/sh
+
+/ # . /etc/profile
 ```
 
 <aside class="notes">
@@ -54,7 +66,7 @@ docker run --interactive \
 Que manque-t-il?
 
 ```console
-$ ls -l /
+demo:/# ls -l /
 ```
 <aside class="notes">
 Réponse : `bootfs`.
@@ -62,53 +74,45 @@ Réponse : `bootfs`.
 
 ---
 
-## Virtualisation d'OS
+## Virtualisation dʼOS
 
 ```shell
-/ # uname -a
-Linux demo 4.6.4-1-ARCH
+demo:/# uname -r
+4.6.4-1-ARCH
 
 (Ctrl-p Ctrl-q)
 
 [yoan@x1]$ uname -a
-Linux x1 4.6.4-1-ARCH
+4.6.4-1-ARCH
 ```
 
 ---
 
-![VMs vs Docker](docker-vs-vm.png)
+![](docker-vs-vm.png)
+
+<aside class="notes">
+Docker vs VM.
+</aside>
 
 ---
 
-## Histoire
+### Histoire
 
 * 1972 IBM VM/370
+* 1979 chroot
 * 1999 FreeBSD jails
-* 2001 Linux VServers
+* 2000 Virtuozzo (OpenVZ)
+* 2001 Linux VServer
 * 2004 Solaris Zones
-* 2005 OpenVZ
-* 2007 cgroups (Google)
 * 2008 LXC
 * 2011 dotCloud (Docker)
-* 2013 systemd-nspawn
+* 2014 CoreOS Rocket (rkt)
+* 2015 LXD (Canonical)
 * 2015 [Open Container Initiative](http://opencontainers.org)
 
----
-
-## Le _“Cloud”_
-
-* Amazon (Xen)
-* Citrix Cloud.com (Xen)
-* Google Compute Engine (KVM)
-* Microsoft Azure (Hyper-V)
-* Digital Ocean (KVM)
-* Samsung Joyent (SmartOS)
-* Verizon (VMware)
-* Infomaniak (KVM)
-* HE-Arc (OpenVZ)
-
 <aside class=notes>
-SmartOS (Joyent, Samsung) = illumos (OpenSolaris) + KVM.
+Virtualisation, puis le terme _jail_ (et du coup, _jailbreak_), pour enfin voir
+le mot _container_ apparaitre avec LXC.
 </aside>
 
 ---
@@ -116,11 +120,11 @@ SmartOS (Joyent, Samsung) = illumos (OpenSolaris) + KVM.
 ## Espace de noms
 
 ```
-/ # ps ax
+demo:/# ps -e
 ```
 
 <aside class="notes">
-Qu'est-ce qui est étonnant ici? Pas de `init`.
+Quʼest-ce qui est étonnant ici? Pas de `init`.
 
 [Problème de zombies...](https://github.com/krallin/tini)
 </aside>
@@ -135,7 +139,12 @@ $ docker stats
 $ docker update --memory 2GB demo
 ```
 <aside class="notes">
-Quota sur les ressources telles que mémoire et CPU.
+Quota sur les ressources telles que mémoire et CPU de manière restreinte
+(par rapport à `ulimit`).
+
+Initié par Google qui utilise des conteneurs depuis toujours.
+
+Utilisé par Hadoop, systemd, etc.
 </aside>
 
 ---
@@ -143,22 +152,34 @@ Quota sur les ressources telles que mémoire et CPU.
 ## _Copy on Write_ (CoW)
 
 ```
-/ # echo "Hello World!" > hello.txt
+demo:/# echo "Hello World!" > hello.txt
 
 $ docker diff ...
 ```
+
+<aside class=notes>
+_Union File System_ managed by overlayfs, aufs, zfs, etc.
+
+Chaque conteneur possède une petite couche modifiable par dessus les couches
+existantes.
+
+[Select a storage driver](https://docs.docker.com/engine/userguide/storagedriver/selectadriver/)
+</aside>
 
 ---
 
 ## Réseau virtuel
 
 ```
-/ # ip addr
+demo:/# ip addr
 
 $ ip addr
 $ docker network list
-$ sudo brctl show
 ```
+
+<aside class=notes>
+`$ sudo brctl show`
+</aside>
 
 ---
 
@@ -182,8 +203,8 @@ $ docker stop demo
 ## Exportation
 
 ```console
-$ docker export -o hello.tar ...
-$ tar xf hello.tar
+$ docker export -o demo.tar demo
+$ tar xf demo.tar
 ```
 
 ---
@@ -191,13 +212,23 @@ $ tar xf hello.tar
 ## Sauvegarde, distribution
 
 ```console
-$ docker commit demo hearc/hello
+$ docker commit demo hearc/demo
 $ docker images
 ```
 
+<aside class=notes>
+`docker push` permet d'envoyer l'image sur Docker hub (ou un autre _registry_).
+</aside>
+
 ---
 
-## _Capabilities_
+## Sécurité
+
+![](crab.png)
+
+---
+
+### _Capabilities_
 
 
 ```shell
@@ -210,12 +241,17 @@ hostname: sethostname:
  Operation not permitted
 ```
 
+<aside class="notes">
+
+</aside>
+
 ---
 
 ### `--cap-add=SYS_ADMIN`
 
-```shell
-$ docker run -it \
+```console
+$ docker run --rm \
+             -it \
              --cap-add=SYS_ADMIN \
              alpine:3.4 \
              /bin/sh
@@ -223,19 +259,25 @@ $ docker run -it \
 / # hostname hello
 ```
 
+<aside class="notes">
+`SYS_TIME` permettrait d'avoir `ntp`.
+</aside>
+
 ---
 
-## _SECure COMPuting_
+### _SECure COMPuting_
 
-Masquage de certains _sys calls_ <br>(par défaut 44 sur 300+).
+Masquage de certains _sys calls_.
 
 ```console
-/ # date --set "2016-08-01 00:00"
+demo:/# date --set "2016-08-01 00:00"
 
-date: can't set date: Operation not permitted
+date: canʼt set date: Operation not permitted
 ```
 
 <aside class="notes">
+Par défaut 44 appels bloqués sur 300+.
+
 Chevauchement avec les _capabilities_.
 
 Merci Google Chrome!
@@ -250,27 +292,28 @@ Merci Google Chrome!
 
 ---
 
-### _Inter-Container Communication_
+## _Inter-Container Communication_
 
+
+![](icc.png)
+
+<aside class=notes>
 Par défaut, deux containers peuvent communiquer entre eux.
 
-```console
-$ docker run -it \
-             -h demo2 \
-             alpine:3.4 \
-             /bin/sh
-
-/ # ping -c 3 172.17.0.2
-```
+Source: [Laurel](https://bloglaurel.com/illustrations-for-docker./36)
+</aside>
 
 ---
 
-### ICC (Suite)
+### ICC (suite)
 
 Désactiver globalement la communication entre conteneurs.
 
-```shell
-# /usr/bin/docker daemon --icc=false ....
+```apache
+# /etc/systemd/system/docker.service
+
+[Config]
+ExecStart=/usr/bin/docker daemon --icc=false ...
 ```
 
 <aside class=notes>
@@ -281,30 +324,20 @@ Ceci est recommandé.
 
 ## Créer un réseau
 
-```shell
+```console
 $ docker network create mynet
-$ docker run -itd \
+
+$ docker network connect mynet demo
+
+$ docker run -it \
              --net=mynet \
-             --name=demo \
              alpine:3.4 \
              /bin/sh
-
-$ docker attach demo
-
-/ # ip addr
 ```
 
----
-
-### Plusieurs réseaux
-
-```
-$ docker network create myothernet
-$ docker network connect myothernet demo
-$ docker attach demo
-
-/ # ip addr
-```
+<aside class="notes">
+Par défaut, c'est _bridge_.
+</aside>
 
 ---
 
@@ -313,11 +346,11 @@ $ docker attach demo
 ```
 $ docker volume create --name myvolume
 
-$ docker run -it \
+$ docker run -it --rm \
              --volume myvolume:/data \
              alpine:3.4 /bin/sh
 
-$ docker run -it \
+$ docker run -it --rm \
              -v myvolume:/data:ro \
              alpine:3.4 /bin/sh
 ```
@@ -327,6 +360,65 @@ E.g. une base de données, un site web (nginx vs php-fpm), etc.
 
 Plugins : GlusterFS, GCE, Contiv (Ceph), etc.
 </aside>
+
+---
+
+## Tour d'horizon
+
+---
+
+### CoreOS rkt
+
+```console
+$ rkt run --insecure-options=image \
+          docker://alpine:3.4 \
+          --exec=/bin/sh \
+          --interactive
+```
+
+<aside class=notes>
+Une image docker peut-être exécutée non plus via `runc` mais `rkt`, une autre
+spécification (appc vs oci).
+
+Utilisé par Blablacar, notamment.
+</aside>
+
+---
+
+### Canonical LXD (LXC)
+
+```
+$ lxc launch images:alpine/3.4/amd64 alpine
+$ lxc exec alpine -- /bin/sh
+```
+
+<aside class="notes">
+Historiquement Docker et CoreOS utilisaient LXC. Remplacé par `runC` et `rkt`
+depuis.
+</aside>
+
+---
+
+### Le _“Cloud”_
+
+* Amazon (Xen)
+* Citrix Cloud.com (Xen)
+* Google Compute Engine (KVM)
+* Microsoft Azure (Hyper-V)
+* Digital Ocean (KVM)
+* Samsung Joyent (SmartOS)
+* Verizon (VMware)
+* Heroku (LXC)
+* Infomaniak (KVM)
+* HE-Arc (OpenVZ)
+
+<aside class=notes>
+SmartOS (Joyent, Samsung) = illumos (OpenSolaris) + KVM.
+</aside>
+
+---
+
+# Pause
 
 ---
 
@@ -341,12 +433,16 @@ Plugins : GlusterFS, GCE, Contiv (Ceph), etc.
 
 ## Créer un système découplé
 
+
+
+---
+
 ### Application PHP
 
     $ docker run -p 8080:80 php:7.0-apache
 
     $ docker exec -it ... /bin/sh
-    # echo '<?php phpinfo();' > /var/www/html/index.php
+    # echo "<?php phpinfo();" > /var/www/html/index.php
     # pecl install redis
     # docker-php-ext-enable redis
     # apache2ctl restart
@@ -380,11 +476,18 @@ TODO
 
 ---
 
-### Distribute
+### Distribution
 
  * Kubernetes (Google)
  * CoreOS (Google Ventures)
  * Docker Swarm (1.12)
+
+---
+
+## Futur
+
+* [containerd](https://www.containerd.tools/)
+* [Unikernel](https://unikernel.org/)
 
 ---
 

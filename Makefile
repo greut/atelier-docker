@@ -2,7 +2,7 @@ pages=workshop.html
 
 all: $(pages)
 
-%.html: %.md
+%.html: %.md header.html
 	pandoc -s -i \
 		--mathjax \
 		-H header.html \
