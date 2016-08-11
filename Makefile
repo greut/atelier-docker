@@ -13,6 +13,13 @@ all: $(pages)
 		--variable showNotes=true \
 		-o $@ $^
 
+%.pdf: %.md
+	pandoc --latex-engine=xelatex \
+		-f markdown \
+		-t latex \
+		-o $@ \
+		$^
+
 clean:
 	rm $(pages)
 
