@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  frontend:
+    image: dockercloud/haproxy
+    links:
+      - php
+    ports:
+      - 8080:80
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  php:
+    image: hearc/php
+    build: .
+    hostname: php
+    links:
+      - redis
+    #ports:
+    #  - 8080:80
+
+  redis:
+    image: redis:3.2-alpine

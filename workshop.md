@@ -30,11 +30,9 @@ docker-compose version 1.7.1
 ```
 
 <aside class="notes">
-Installation :
-
-* [Windows 10](https://docs.docker.com/docker-for-windows/)
-* [macOS](https://docs.docker.com/docker-for-mac/)
-* [GNU/Linux](https://docs.docker.com/engine/installation/)
+Installation : [Windows 10](https://docs.docker.com/docker-for-windows/),
+[macOS](https://docs.docker.com/docker-for-mac/),
+[GNU/Linux](https://docs.docker.com/engine/installation/).
 
 Nous allons travailler avec la version 1.11+ (Linux 4.3+).
 </aside>
@@ -80,7 +78,7 @@ demo:/# ls -l /
 
 ---
 
-## Virtualisation dʼOS
+### indice
 
 ```shell
 demo:/# uname -r
@@ -155,7 +153,8 @@ docker update --memory 2GB demo
 Quota sur les ressources telles que mémoire et CPU de manière restreinte
 (par rapport à `ulimit`).
 
-Initié par Google qui utilise des conteneurs depuis « toujours ».
+Initié par Google qui utilise des conteneurs depuis « toujours », voir
+[Borg](http://research.google.com/pubs/pub43438.html)
 
 Hadoop ou systemd utilisent notamment les _cgroups_.
 </aside>
@@ -224,6 +223,10 @@ docker export -o demo.tar demo
 
 tar tf demo.tar
 ```
+
+<aside class=notes>
+Une des additions de Docker sur son parent, LXC.
+</aside>
 
 ---
 
@@ -434,7 +437,7 @@ Plugins : GlusterFS, GCE, Contiv (Ceph), etc.
 
 ---
 
-## Tour d'horizon
+## Tour dʼhorizon
 
 ---
 
@@ -467,6 +470,8 @@ $ lxc exec alpine -- /bin/sh
 Historiquement Docker et CoreOS utilisaient LXC. Remplacé par `runC` et `rkt`
 depuis. LXD est la réponse de Canonical. Support notable de CRIU pour des
 migrations en live.
+
+Il y a également [systemd-nspawn](https://seanmcgary.com/posts/run-docker-containers-with-systemd-nspawn)
 </aside>
 
 ---
@@ -490,7 +495,7 @@ SmartOS (Joyent, Samsung) = illumos (OpenSolaris) + KVM.
 
 ---
 
-# Pause
+# mi-temps
 
 ---
 
@@ -505,75 +510,220 @@ SmartOS (Joyent, Samsung) = illumos (OpenSolaris) + KVM.
 
 ## Créer un système découplé
 
+```console
+docker run -d \
+           --publish-all \
+           --name php \
+           php:7.0-apache
 
+docker cp index.php php:/var/www/html
+```
 
----
+<aside class=notes>
+Téléchargement et exécution d'une image [PHP
+préconstruite](https://hub.docker.com/_/php/).
 
-### Application PHP
-
-    $ docker run -p 8080:80 php:7.0-apache
-
-    $ docker exec -it ... /bin/sh
-    # echo "<?php phpinfo();" > /var/www/html/index.php
-    # pecl install redis
-    # docker-php-ext-enable redis
-    # apache2ctl restart
-
-    $ docker cp index.php ...:/var/www/html
-
-    $ docker run redis:3.2-alpine
-
-    $ docker commit ... hearc/php
-    $ docker run --link ...:redis -p 8080:80 hearc/php
-    $ docker cp ...
-
-### Dockerfile
-
-    $ docker stop
-    $ docker rm ...
-    $ docker rmi
-
-    $ docker build -t hearc/php .
-    $ docker run -d --link redis -p 8080:80 hearc/php
-
-### Docker-compose
-
-    $ docker-compose build
-    $ docker-compose up
-    $ docker-compose
-
-## Going bigger
-
-TODO
+Les ports sont exportés de manière aléatoire.
+</aside>
 
 ---
 
-### Distribution
+### Ajout de Redis
 
- * Kubernetes (Google)
- * CoreOS (Google Ventures)
+```
+docker exec -it php bash
+
+# pecl install redis
+# docker-php-ext-enable redis
+# apache2ctl restart
+```
+
+<aside class=notes>
+Rafraichir le `phpinfo` va montrer que Redis est à présent là.
+</aside>
+
+---
+
+### `Dockerfile`
+
+```docker
+FROM php:7.0-apache
+
+RUN pecl install redis \
+ && docker-php-ext-enable redis
+
+COPY index.php /var/www/html
+```
+
+Construction d'une image.
+
+```
+docker build -t myapp .
+```
+
+<aside class=notes>
+Notre nouvelle image ajoute deux couches à l'image de base.
+</aside>
+
+---
+
+### `index.php`
+
+```php
+<?php
+$redis = new Redis();
+$redis->connect('redis');
+$redis->incr('test');
+
+echo $redis->get('test');
+```
+
+Mise-à-jour de notre image.
+
+```
+docker build -t myapp .
+```
+
+<aside class=notes>
+Notre ancienne image a disparu de notre liste. Il est néanmoins possible de la
+retagguer à volonté.
+</aside>
+
+---
+
+### Redis
+
+```
+docker run -d \
+           --name redis \
+           redis:3.2-alpine
+
+docker run -dP \
+           --link redis \
+           --name php \
+           myapp
+```
+
+<aside class="notes">
+Malgré `--icc=false`, les ports ouverts de `redis` ont été
+ouverts dans `php` et seulement ceux-là.
+
+    / # ping -c 3 redis
+    / # apk --no-cache add nmap
+    / # nmap -p1-6400 redis
+
+</aside>
+
+---
+
+## Docker-compose
+
+```yaml
+version: '2'
+services:
+  php:
+    image: myapp
+    links:
+      - redis
+    ports:
+      - 80:80
+  redis:
+    image: redis:3.2-alpine
+```
+
+Exécution
+
+```console
+docker-compose up
+```
+
+<aside class="notes">
+`-d` permet de lancer docker-compose en arrière plan.
+</aside>
+
+---
+
+### (re)construire
+
+```yaml
+services:
+  php:
+    image: myapp
+    build: .
+```
+
+Mise à jour.
+
+```console
+docker-compose build
+docker-compose up frontend
+```
+
+---
+
+![](bingo.jpg)
+
+<aside class=notes>
+Préparez vos cartes!
+</aside>
+
+---
+
+### Scalabilité horizontale
+
+```yaml
+frontend:
+  image: dockercloud/haproxy
+  links:
+    - php
+  ports:
+    - 80:80
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+
+```
+
+Go big!
+
+```
+docker-compose scale php=2
+```
+
+---
+
+## Distribution
+
  * Docker Swarm (1.12)
+ * Kubernetes (Google)
+ * Amazon EC2 Container Service
+ * Apache Mesos (Berkeley)
+ * CoreOS (Google Ventures)
 
 ---
 
 ## Futur
 
+* [Docker + CUDA](https://devblogs.nvidia.com/parallelforall/nvidia-docker-gpu-server-application-deployment-made-easy/)
 * [containerd](https://www.containerd.tools/)
 * [Unikernel](https://unikernel.org/)
 
 ---
 
-## Links
+## Lectures
 
-http://prakhar.me/docker-curriculum/
-https://medium.com/google-cloud/docker-swarm-on-google-cloud-platform-c9925bd7863c
-https://devblogs.nvidia.com/parallelforall/nvidia-docker-gpu-server-application-deployment-made-easy/
-http://research.google.com/pubs/pub43438.html
-https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
-https://seanmcgary.com/posts/run-docker-containers-with-systemd-nspawn
-https://www.opencontainers.org/
-https://blog.docker.com/2013/08/containers-docker-how-secure-are-they/
-http://www.slideshare.net/ctankersley/docker-for-php-developers-jetbrains
-https://medium.com/@lherrera/life-and-death-of-a-container-146dfc62f808
-https://blog.docker.com/2016/02/docker-engine-1-10-security/
-https://www.linux.com/news/containers-vs-hypervisors-choosing-best-virtualization-technology
+* [Docker Curriculum](http://prakhar.me/docker-curriculum/), Prakhar Srivastav
+* [Slideshare](http://www.slideshare.net/jpetazzo), Jérôme Petazzoni
+* [Life and death of a container](https://medium.com/@lherrera/life-and-death-of-a-container-146dfc62f808), Luis Herrera Benítez
+* [Docker for PHP Developers](http://www.slideshare.net/ctankersley/docker-for-php-developers-jetbrains), Chris Tankersley
+
+---
+
+# End
+
+---
+
+* https://medium.com/google-cloud/docker-swarm-on-google-cloud-platform-c9925bd7863c
+* https://blog.docker.com/2013/08/containers-docker-how-secure-are-they/
+* https://blog.docker.com/2016/02/docker-engine-1-10-security/
+* https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
+* https://www.linux.com/news/containers-vs-hypervisors-choosing-best-virtualization-technology
