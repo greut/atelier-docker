@@ -3,7 +3,6 @@ title: Atelier Docker
 author:
  - Yoan Blanc <code>yoan@dosimple.ch</code>
 date: 2016-08-15
-institute: HE-Arc
 lang: fr
 ---
 
@@ -22,14 +21,22 @@ propulsé par le langage de programmation [Go](https://golang.org/).
 ```console
 $ uname -r
 4.6.4-1
+
 $ docker -v
 Docker version 1.11.2
+
 $ docker-compose -v
 docker-compose version 1.7.1
 ```
 
 <aside class="notes">
-Ayez au moins deux terminaux (_shells_) à disposition.
+Installation :
+
+* [Windows 10](https://docs.docker.com/docker-for-windows/)
+* [macOS](https://docs.docker.com/docker-for-mac/)
+* [GNU/Linux](https://docs.docker.com/engine/installation/)
+
+Nous allons travailler avec la version 1.11+ (Linux 4.3+).
 </aside>
 
 ---
@@ -37,12 +44,13 @@ Ayez au moins deux terminaux (_shells_) à disposition.
 # Objectifs
 
 1. Se familiariser avec un _container_ Linux.
-2. Créer une application PHP dans un conteneur.
-3. Scalabilité horizontale de notre application.
+2. Comprendre les enjeux de sécurité.
+3. Créer une application PHP dans un conteneur.
+4. Scalabilité horizontale de notre application.
 
 ---
 
-## Plongeons.
+## Plongeons
 
 ```console
 docker run --interactive \
@@ -52,7 +60,8 @@ docker run --interactive \
            alpine:3.4 \
            /bin/sh
 
-/ # . /etc/profile
+/ # source /etc/profile
+demo:/#
 ```
 
 <aside class="notes">
@@ -68,9 +77,6 @@ Que manque-t-il?
 ```console
 demo:/# ls -l /
 ```
-<aside class="notes">
-Réponse : `bootfs`.
-</aside>
 
 ---
 
@@ -82,16 +88,21 @@ demo:/# uname -r
 
 (Ctrl-p Ctrl-q)
 
-[yoan@x1]$ uname -a
+$ uname -a
 4.6.4-1-ARCH
 ```
+
+<aside class="notes">
+Le principe de la virtualisation d'OS est de partager le noyau.
+</aside>
 
 ---
 
 ![](docker-vs-vm.png)
 
 <aside class="notes">
-Docker vs VM.
+Contrairement à la virtualisation ou para-virtualisation, il n'y a pas de
+système d'exploitation invité dans un conteneur.
 </aside>
 
 ---
@@ -111,8 +122,11 @@ Docker vs VM.
 * 2015 [Open Container Initiative](http://opencontainers.org)
 
 <aside class=notes>
-Virtualisation, puis le terme _jail_ (et du coup, _jailbreak_), pour enfin voir
-le mot _container_ apparaitre avec LXC.
+Virtualisation date des années 70, puis vient le terme _jail_ (et du coup,
+_jailbreak_), pour enfin voir le mot _container_ apparaitre avec LXC.
+
+Les _namespaces_ et _cgroups_ ont permis la naissance de LXC qui a engendré docker,
+rocket et consœurs.
 </aside>
 
 ---
@@ -124,9 +138,8 @@ demo:/# ps -e
 ```
 
 <aside class="notes">
-Quʼest-ce qui est étonnant ici? Pas de `init`.
-
-[Problème de zombies...](https://github.com/krallin/tini)
+Quʼest-ce qui est étonnant ici? Pas de `init`. Si votre processus forke, il y
+a un risque de rencontrer des [problème de zombies...](https://github.com/krallin/tini)
 </aside>
 
 ---
@@ -134,17 +147,17 @@ Quʼest-ce qui est étonnant ici? Pas de `init`.
 ## _Control Groups_
 
 ```
-$ docker stats
+docker stats
 
-$ docker update --memory 2GB demo
+docker update --memory 2GB demo
 ```
 <aside class="notes">
 Quota sur les ressources telles que mémoire et CPU de manière restreinte
 (par rapport à `ulimit`).
 
-Initié par Google qui utilise des conteneurs depuis toujours.
+Initié par Google qui utilise des conteneurs depuis « toujours ».
 
-Utilisé par Hadoop, systemd, etc.
+Hadoop ou systemd utilisent notamment les _cgroups_.
 </aside>
 
 ---
@@ -154,16 +167,16 @@ Utilisé par Hadoop, systemd, etc.
 ```
 demo:/# echo "Hello World!" > hello.txt
 
-$ docker diff ...
+docker diff ...
 ```
 
 <aside class=notes>
-_Union File System_ managed by overlayfs, aufs, zfs, etc.
+_Union File System_ via overlayfs, aufs, zfs, etc. (voir : [Select a storage
+driver](https://docs.docker.com/engine/userguide/storagedriver/selectadriver/))
 
 Chaque conteneur possède une petite couche modifiable par dessus les couches
-existantes.
+existantes. Ceci permet de démarrer quasiment instantanément des instances.
 
-[Select a storage driver](https://docs.docker.com/engine/userguide/storagedriver/selectadriver/)
 </aside>
 
 ---
@@ -173,12 +186,13 @@ existantes.
 ```
 demo:/# ip addr
 
-$ ip addr
-$ docker network list
+ip addr
+
+docker network list
 ```
 
 <aside class=notes>
-`$ sudo brctl show`
+`brctl show`
 </aside>
 
 ---
@@ -187,24 +201,28 @@ $ docker network list
 
 ```
 / # exit
-$ docker ps -a
+docker ps -a
 
-$ docker start demo
+docker start demo
 
-$ docker attach demo
+docker attach demo
 / # more hello.txt
 
-Ctrl-p + Ctrl-q
-$ docker stop demo
+docker stop demo
 ```
+
+<aside class="notes">
+Ctrl-p + Ctrl-q pour se détacher.
+</aside>
 
 ---
 
 ## Exportation
 
 ```console
-$ docker export -o demo.tar demo
-$ tar xf demo.tar
+docker export -o demo.tar demo
+
+tar tf demo.tar
 ```
 
 ---
@@ -212,8 +230,9 @@ $ tar xf demo.tar
 ## Sauvegarde, distribution
 
 ```console
-$ docker commit demo hearc/demo
-$ docker images
+docker commit demo hearc/demo
+
+docker images
 ```
 
 <aside class=notes>
@@ -225,6 +244,13 @@ $ docker images
 ## Sécurité
 
 ![](crab.png)
+
+<aside class=notes>
+En terme de surface d'attaque, la virtualisation d'OS est plus risquée que de
+la paravirtualisation ou de la virtualisation pure (type 1 ou 2). Par exemple,
+Docker est exécuté en tant que `root`, donc réussir à en sortir est la porte
+du paradis.
+</aside>
 
 ---
 
@@ -242,7 +268,7 @@ hostname: sethostname:
 ```
 
 <aside class="notes">
-
+Le but est de remplacer le trop permissif `setuid` et ainsi d'éviter `root`.
 </aside>
 
 ---
@@ -250,11 +276,11 @@ hostname: sethostname:
 ### `--cap-add=SYS_ADMIN`
 
 ```console
-$ docker run --rm \
-             -it \
-             --cap-add=SYS_ADMIN \
-             alpine:3.4 \
-             /bin/sh
+docker run --rm \
+           -it \
+           --cap-add=SYS_ADMIN \
+           alpine:3.4 \
+           /bin/sh
 
 / # hostname hello
 ```
@@ -270,9 +296,13 @@ $ docker run --rm \
 Masquage de certains _sys calls_.
 
 ```console
-demo:/# date --set "2016-08-01 00:00"
+demo:/# apk update \
+     && apk add keyutils
 
-date: canʼt set date: Operation not permitted
+demo:/# keyctl session
+
+keyctl_join_session_keyring:
+ Operation not permitted
 ```
 
 <aside class="notes">
@@ -285,8 +315,49 @@ Merci Google Chrome!
 
 ---
 
+### `--pids-limit n`
+
+```
+docker run -it --rm \
+           --pids-limit 20 \
+           alpine:3.4 \
+           /bin/sh
+
+/ # b() { b | b&; }; b
+```
+
+<aside class="notes">
+Disponible depuis Docker 1.11 (requiert Linux 4.3).
+</aside>
+
+---
+
+### Espace utilisateur
+
+```
+docker run -it --rm \
+           --volume /etc:/etc \
+           alpine:3.4 \
+           /bin/sh
+
+/ # more /etc/passwd | grep yoan
+```
+
+<aside class=notes>
+Qui peut accéder à votre système de fichiers, devient `root` par définition.
+
+Solution: `--userns-remap=default` qui requiert un module dans le noyau Linux,
+`CONFIG_USER_NS`.
+
+Disponible depuis Docker 1.10.
+</aside>
+
+---
+
+
 ### Plus de sécurité
 
+* [Docker Bench for Security](https://github.com/docker/docker-bench-security)
 * AppArmor (SuSE, Ubuntu)
 * SELinux (NSA, Red Hat, CentOS, etc.)
 
@@ -344,15 +415,15 @@ Par défaut, c'est _bridge_.
 ## Créer un volume
 
 ```
-$ docker volume create --name myvolume
+docker volume create --name myvolume
 
-$ docker run -it --rm \
-             --volume myvolume:/data \
-             alpine:3.4 /bin/sh
+docker run -it --rm \
+           --volume myvolume:/data \
+           alpine:3.4 /bin/sh
 
-$ docker run -it --rm \
-             -v myvolume:/data:ro \
-             alpine:3.4 /bin/sh
+docker run -it --rm \
+           -v myvolume:/data:ro \
+           alpine:3.4 /bin/sh
 ```
 
 <aside class="notes">
@@ -394,7 +465,8 @@ $ lxc exec alpine -- /bin/sh
 
 <aside class="notes">
 Historiquement Docker et CoreOS utilisaient LXC. Remplacé par `runC` et `rkt`
-depuis.
+depuis. LXD est la réponse de Canonical. Support notable de CRIU pour des
+migrations en live.
 </aside>
 
 ---
