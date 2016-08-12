@@ -8,10 +8,15 @@ all: $(pages)
 		-H header.html \
 		-f markdown \
 		-t revealjs \
+		--variable revealjs-url=. \
 		--variable theme=night \
 		--variable history=true \
-		--variable showNotes=true \
+		--variable showNotes=false \
+		--variable controls=false \
+		--variable slideServer=true \
 		-o $@ $^
+	cp $@ reveal.js/index.html
+	cp -r images reveal.js
 
 %.pdf: %.md
 	pandoc --latex-engine=xelatex \
@@ -21,6 +26,9 @@ all: $(pages)
 		$^
 
 clean:
-	rm $(pages)
+	rm -r $(pages) *.pdf
+
+server:
+	node reveal.js/plugin/notes-server
 
 .PHONY: clean

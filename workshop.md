@@ -6,7 +6,7 @@ date: 2016-08-15
 lang: fr
 ---
 
-![](docker.png)
+![](images/docker.png)
 
 <aside class="notes">
 [Docker](https://docker.com/) cʼest un système
@@ -20,13 +20,13 @@ propulsé par le langage de programmation [Go](https://golang.org/).
 
 ```console
 $ uname -r
-4.6.4-1
+4.4+
 
 $ docker -v
-Docker version 1.11.2
+Docker version 1.10+
 
 $ docker-compose -v
-docker-compose version 1.7.1
+docker-compose version 1.6+
 ```
 
 <aside class="notes">
@@ -96,7 +96,7 @@ Le principe de la virtualisation d'OS est de partager le noyau.
 
 ---
 
-![](docker-vs-vm.png)
+![](images/docker-vs-vm.png)
 
 <aside class="notes">
 Contrairement à la virtualisation ou para-virtualisation, il n'y a pas de
@@ -226,6 +226,8 @@ tar tf demo.tar
 
 <aside class=notes>
 Une des additions de Docker sur son parent, LXC.
+
+Et sa contrepartie, `docker import`.
 </aside>
 
 ---
@@ -246,7 +248,7 @@ docker images
 
 ## Sécurité
 
-![](crab.png)
+![](images/crab.png)
 
 <aside class=notes>
 En terme de surface d'attaque, la virtualisation d'OS est plus risquée que de
@@ -326,10 +328,12 @@ docker run -it --rm \
            alpine:3.4 \
            /bin/sh
 
-/ # b() { b | b&; }; b
+/ # b() { b | b& }; b
 ```
 
 <aside class="notes">
+Avec un `sleep 1 && ( b | b& )` et `docker stats`, c'est intéressant
+
 Disponible depuis Docker 1.11 (requiert Linux 4.3).
 </aside>
 
@@ -369,7 +373,7 @@ Disponible depuis Docker 1.10.
 ## _Inter-Container Communication_
 
 
-![](icc.png)
+![](images/icc.png)
 
 <aside class=notes>
 Par défaut, deux containers peuvent communiquer entre eux.
@@ -661,7 +665,7 @@ docker-compose up frontend
 
 ---
 
-![](bingo.jpg)
+![](images/bingo.jpg)
 
 <aside class=notes>
 Préparez vos cartes!
