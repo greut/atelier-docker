@@ -14,8 +14,7 @@ all: $(pages)
 		--variable showNotes=false \
 		--variable controls=false \
 		--variable slideServer=true \
-		-o $@ $^
-	cp $@ reveal.js/index.html
+		-o reveal.js/$@ $^
 	cp -r images reveal.js
 
 %.pdf: %.md
@@ -26,7 +25,7 @@ all: $(pages)
 		$^
 
 clean:
-	rm -r $(pages) *.pdf
+	rm -r *.pdf
 
 server:
 	node reveal.js/plugin/notes-server

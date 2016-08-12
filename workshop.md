@@ -9,8 +9,8 @@ lang: fr
 ![](images/docker.png)
 
 <aside class="notes">
-[Docker](https://docker.com/) cʼest un système
-dʼorchestration de conteneurs, sous [GNU/Linux](https://www.kernel.org/)
+[Docker](https://docker.com/) est un système
+d'orchestration de conteneurs, sous [GNU/Linux](https://www.kernel.org/)
 propulsé par le langage de programmation [Go](https://golang.org/).
 </aside>
 
@@ -33,8 +33,6 @@ docker-compose version 1.6+
 Installation : [Windows 10](https://docs.docker.com/docker-for-windows/),
 [macOS](https://docs.docker.com/docker-for-mac/),
 [GNU/Linux](https://docs.docker.com/engine/installation/).
-
-Nous allons travailler avec la version 1.11+ (Linux 4.3+).
 </aside>
 
 ---
@@ -441,7 +439,7 @@ Plugins : GlusterFS, GCE, Contiv (Ceph), etc.
 
 ---
 
-## Tour dʼhorizon
+## Tour d'horizon
 
 ---
 
