@@ -12,6 +12,8 @@ lang: fr
 [Docker](https://docker.com/) est un système
 d'orchestration de conteneurs, sous [GNU/Linux](https://www.kernel.org/)
 propulsé par le langage de programmation [Go](https://golang.org/).
+
+Quelles sont vos attentes? Qu'allez-vous découvrir?
 </aside>
 
 ---
@@ -22,7 +24,7 @@ propulsé par le langage de programmation [Go](https://golang.org/).
 $ uname -r
 4.4+
 
-$ docker -v
+$ docker version
 Docker version 1.10+
 
 $ docker-compose -v
@@ -61,7 +63,8 @@ demo:/#
 ```
 
 <aside class="notes">
-[Alpine Linux](http://alpinelinux.org/) est basé sur Busybox et musl libc.
+[Alpine Linux](http://alpinelinux.org/) est basé sur Busybox et musl libc dans
+le but de fonctionner en RAM.
 </aside>
 
 ---
@@ -131,7 +134,20 @@ rocket et consœurs.
 
 ```
 demo:/# ps -e
+
+$ ps -e
 ```
+
+<aside class="notes">
+Vos processes sont isolés des autres.
+</aside>
+
+---
+
+### Quiz 2
+
+Quel est le risque d'un système sans `init` (comme `systemd`, `upstart`,
+`runit`)?
 
 <aside class="notes">
 Quʼest-ce qui est étonnant ici? Pas de `init`. Si votre processus forke, il y
@@ -337,7 +353,9 @@ Disponible depuis Docker 1.11 (requiert Linux 4.3).
 
 ---
 
-### Espace utilisateur
+### Quiz 3
+
+Quel est le problème ici?
 
 ```
 docker run -it --rm \
@@ -345,20 +363,24 @@ docker run -it --rm \
            alpine:3.4 \
            /bin/sh
 
-/ # more /etc/passwd | grep yoan
+/ # more /etc/passwd
 ```
 
-<aside class=notes>
+---
+
+### Espace utilisateur
+
 Qui peut accéder à votre système de fichiers, devient `root` par définition.
 
-Solution: `--userns-remap=default` qui requiert un module dans le noyau Linux,
+**Solution:** `--userns-remap=default`.
+
+<aside class=notes>
 `CONFIG_USER_NS`.
 
 Disponible depuis Docker 1.10.
 </aside>
 
 ---
-
 
 ### Plus de sécurité
 
@@ -412,7 +434,7 @@ $ docker run -it \
 ```
 
 <aside class="notes">
-Par défaut, c'est _bridge_.
+Par défaut, c'est _bridge_ qui est choisi.
 </aside>
 
 ---
@@ -693,7 +715,7 @@ docker-compose scale php=2
 
 ---
 
-## Distribution
+## Going bigger!
 
  * Docker Swarm (1.12)
  * Kubernetes (Google)
@@ -708,6 +730,7 @@ docker-compose scale php=2
 * [Docker + CUDA](https://devblogs.nvidia.com/parallelforall/nvidia-docker-gpu-server-application-deployment-made-easy/)
 * [containerd](https://www.containerd.tools/)
 * [Unikernel](https://unikernel.org/)
+* [Triton Cloud](https://docs.joyent.com/public-cloud)
 
 ---
 
@@ -715,6 +738,8 @@ docker-compose scale php=2
 
 * [Docker Curriculum](http://prakhar.me/docker-curriculum/), Prakhar Srivastav
 * [Slideshare](http://www.slideshare.net/jpetazzo), Jérôme Petazzoni
+* [Understanding and Hardening Linux Containers](https://www.nccgroup.trust/globalassets/our-research/us/whitepapers/2016/april/ncc_group_understanding_hardening_linux_containers-10pdf/)
+* [Run containres on bare metal already!](https://www.youtube.com/watch?v=coFIEH3vXPw)
 * [Life and death of a container](https://medium.com/@lherrera/life-and-death-of-a-container-146dfc62f808), Luis Herrera Benítez
 * [Docker for PHP Developers](http://www.slideshare.net/ctankersley/docker-for-php-developers-jetbrains), Chris Tankersley
 
@@ -722,10 +747,12 @@ docker-compose scale php=2
 
 # End
 
----
+<!--
 
 * https://medium.com/google-cloud/docker-swarm-on-google-cloud-platform-c9925bd7863c
 * https://blog.docker.com/2013/08/containers-docker-how-secure-are-they/
 * https://blog.docker.com/2016/02/docker-engine-1-10-security/
 * https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
 * https://www.linux.com/news/containers-vs-hypervisors-choosing-best-virtualization-technology
+
+-->

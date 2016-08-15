@@ -14,7 +14,7 @@ all: $(pages)
 		--variable showNotes=false \
 		--variable controls=false \
 		--variable slideServer=true \
-		-o reveal.js/$@ $^
+		-o reveal.js/index.html $^
 	cp -r images reveal.js
 
 %.pdf: %.md
