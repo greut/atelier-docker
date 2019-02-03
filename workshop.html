@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Yoan Blanc yoan@dosimple.ch">
+  <meta name="dcterms.date" content="2016-08-15">
+  <title>Atelier Docker</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="./css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" href="./css/theme/night.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? './css/print/pdf.css' : './css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="./lib/js/html5shiv.js"></script>
+  <![endif]-->
+  <!-- begin: header.html -->
+  <style>
+  .reveal { font-size: 28pt }
+  .reveal pre { background-color: #090909; }
+  .reveal pre code { font-size: 150%; line-height: 1.2 }
+  .reveal section img { border: 0 none; background-color: transparent; box-shadow: 0 0 0; }
+  
+  .sourceCode span.kw,
+  .sourceCode span.ot { color: #9fc; }
+  .sourceCode span.st,
+  .sourceCode span.fu { color: #9cf; }
+  </style>
+  <!-- end: header.html -->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+  <h1 class="title">Atelier Docker</h1>
+  <h2 class="author">Yoan Blanc <code>yoan@dosimple.ch</code></h2>
+  <h3 class="date">2016-08-15</h3>
+</section>
+
+<section class="slide level1">
+
+<figure>
+<img src="images/docker.png" />
+</figure>
+<aside class="notes">
+<a href="https://docker.com/">Docker</a> cʼest un système dʼorchestration de conteneurs, sous <a href="https://www.kernel.org/">GNU/Linux</a> propulsé par le langage de programmation <a href="https://golang.org/">Go</a>.
+</aside>
+</section>
+<section id="préparatifs" class="slide level1">
+<h1>Préparatifs</h1>
+<pre class="console"><code>$ uname -r
+4.4+
+
+$ docker -v
+Docker version 1.10+
+
+$ docker-compose -v
+docker-compose version 1.6+</code></pre>
+<aside class="notes">
+<p>Installation : <a href="https://docs.docker.com/docker-for-windows/">Windows 10</a>, <a href="https://docs.docker.com/docker-for-mac/">macOS</a>, <a href="https://docs.docker.com/engine/installation/">GNU/Linux</a>.</p>
+Nous allons travailler avec la version 1.11+ (Linux 4.3+).
+</aside>
+</section>
+<section id="objectifs" class="slide level1">
+<h1>Objectifs</h1>
+<ol type="1">
+<li class="fragment">Se familiariser avec un <em>container</em> Linux.</li>
+<li class="fragment">Comprendre les enjeux de sécurité.</li>
+<li class="fragment">Créer une application PHP dans un conteneur.</li>
+<li class="fragment">Scalabilité horizontale de notre application.</li>
+</ol>
+</section>
+<section class="slide level1">
+
+<h2 id="plongeons">Plongeons</h2>
+<pre class="console"><code>docker run --interactive \
+           --tty \
+           --hostname demo \
+           --name demo \
+           alpine:3.4 \
+           /bin/sh
+
+/ # source /etc/profile
+demo:/#</code></pre>
+<aside class="notes">
+<a href="http://alpinelinux.org/">Alpine Linux</a> est basé sur Busybox et musl libc.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="quiz-1">Quiz 1</h3>
+<p>Que manque-t-il?</p>
+<pre class="console"><code>demo:/# ls -l /</code></pre>
+</section>
+<section class="slide level1">
+
+<h3 id="indice">indice</h3>
+<pre class="shell"><code>demo:/# uname -r
+4.6.4-1-ARCH
+
+(Ctrl-p Ctrl-q)
+
+$ uname -a
+4.6.4-1-ARCH</code></pre>
+<aside class="notes">
+Le principe de la virtualisation d'OS est de partager le noyau.
+</aside>
+</section>
+<section class="slide level1">
+
+<figure>
+<img src="images/docker-vs-vm.png" />
+</figure>
+<aside class="notes">
+Contrairement à la virtualisation ou para-virtualisation, il n'y a pas de système d'exploitation invité dans un conteneur.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="histoire">Histoire</h3>
+<ul>
+<li class="fragment">1972 IBM VM/370</li>
+<li class="fragment">1979 chroot</li>
+<li class="fragment">1999 FreeBSD jails</li>
+<li class="fragment">2000 Virtuozzo (OpenVZ)</li>
+<li class="fragment">2001 Linux VServer</li>
+<li class="fragment">2004 Solaris Zones</li>
+<li class="fragment">2008 LXC</li>
+<li class="fragment">2011 dotCloud (Docker)</li>
+<li class="fragment">2014 CoreOS Rocket (rkt)</li>
+<li class="fragment">2015 LXD (Canonical)</li>
+<li class="fragment">2015 <a href="http://opencontainers.org">Open Container Initiative</a></li>
+</ul>
+<aside class="notes">
+<p>Virtualisation date des années 70, puis vient le terme <em>jail</em> (et du coup, <em>jailbreak</em>), pour enfin voir le mot <em>container</em> apparaitre avec LXC.</p>
+Les <em>namespaces</em> et <em>cgroups</em> ont permis la naissance de LXC qui a engendré docker, rocket et consœurs.
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="espace-de-noms">Espace de noms</h2>
+<pre><code>demo:/# ps -e</code></pre>
+<aside class="notes">
+Quʼest-ce qui est étonnant ici? Pas de <code>init</code>. Si votre processus forke, il y a un risque de rencontrer des <a href="https://github.com/krallin/tini">problème de zombies...</a>
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="control-groups"><em>Control Groups</em></h2>
+<pre><code>docker stats
+
+docker update --memory 2GB demo</code></pre>
+<aside class="notes">
+<p>Quota sur les ressources telles que mémoire et CPU de manière restreinte (par rapport à <code>ulimit</code>).</p>
+<p>Initié par Google qui utilise des conteneurs depuis « toujours », voir <a href="http://research.google.com/pubs/pub43438.html">Borg</a></p>
+Hadoop ou systemd utilisent notamment les <em>cgroups</em>.
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="copy-on-write-cow"><em>Copy on Write</em> (CoW)</h2>
+<pre><code>demo:/# echo &quot;Hello World!&quot; &gt; hello.txt
+
+docker diff ...</code></pre>
+<aside class="notes">
+<p><em>Union File System</em> via overlayfs, aufs, zfs, etc. (voir : <a href="https://docs.docker.com/engine/userguide/storagedriver/selectadriver/">Select a storage driver</a>)</p>
+<p>Chaque conteneur possède une petite couche modifiable par dessus les couches existantes. Ceci permet de démarrer quasiment instantanément des instances.</p>
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="réseau-virtuel">Réseau virtuel</h2>
+<pre><code>demo:/# ip addr
+
+ip addr
+
+docker network list</code></pre>
+<aside class="notes">
+<code>brctl show</code>
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="arrêt-redémarrage">Arrêt, redémarrage</h2>
+<pre><code>/ # exit
+docker ps -a
+
+docker start demo
+
+docker attach demo
+/ # more hello.txt
+
+docker stop demo</code></pre>
+<aside class="notes">
+Ctrl-p + Ctrl-q pour se détacher.
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="exportation">Exportation</h2>
+<pre class="console"><code>docker export -o demo.tar demo
+
+tar tf demo.tar</code></pre>
+<aside class="notes">
+<p>Une des additions de Docker sur son parent, LXC.</p>
+Et sa contrepartie, <code>docker import</code>.
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="sauvegarde-distribution">Sauvegarde, distribution</h2>
+<pre class="console"><code>docker commit demo hearc/demo
+
+docker images</code></pre>
+<aside class="notes">
+<code>docker push</code> permet d'envoyer l'image sur Docker hub (ou un autre <em>registry</em>).
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="sécurité">Sécurité</h2>
+<figure>
+<img src="images/crab.png" />
+</figure>
+<aside class="notes">
+En terme de surface d'attaque, la virtualisation d'OS est plus risquée que de la paravirtualisation ou de la virtualisation pure (type 1 ou 2). Par exemple, Docker est exécuté en tant que <code>root</code>, donc réussir à en sortir est la porte du paradis.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="capabilities"><em>Capabilities</em></h3>
+<pre class="shell"><code>/ # hostname
+demo
+
+/ # hostname hello
+
+hostname: sethostname:
+ Operation not permitted</code></pre>
+<aside class="notes">
+Le but est de remplacer le trop permissif <code>setuid</code> et ainsi d'éviter <code>root</code>.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="cap-addsys_admin"><code>--cap-add=SYS_ADMIN</code></h3>
+<pre class="console"><code>docker run --rm \
+           -it \
+           --cap-add=SYS_ADMIN \
+           alpine:3.4 \
+           /bin/sh
+
+/ # hostname hello</code></pre>
+<aside class="notes">
+<code>SYS_TIME</code> permettrait d'avoir <code>ntp</code>.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="secure-computing"><em>SECure COMPuting</em></h3>
+<p>Masquage de certains <em>sys calls</em>.</p>
+<pre class="console"><code>demo:/# apk update \
+     &amp;&amp; apk add keyutils
+
+demo:/# keyctl session
+
+keyctl_join_session_keyring:
+ Operation not permitted</code></pre>
+<aside class="notes">
+<p>Par défaut 44 appels bloqués sur 300+.</p>
+<p>Chevauchement avec les <em>capabilities</em>.</p>
+Merci Google Chrome!
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="pids-limit-n"><code>--pids-limit n</code></h3>
+<pre><code>docker run -it --rm \
+           --pids-limit 20 \
+           alpine:3.4 \
+           /bin/sh
+
+/ # b() { b | b&amp;; }; b</code></pre>
+<aside class="notes">
+Disponible depuis Docker 1.11 (requiert Linux 4.3).
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="espace-utilisateur">Espace utilisateur</h3>
+<pre><code>docker run -it --rm \
+           --volume /etc:/etc \
+           alpine:3.4 \
+           /bin/sh
+
+/ # more /etc/passwd | grep yoan</code></pre>
+<aside class="notes">
+<p>Qui peut accéder à votre système de fichiers, devient <code>root</code> par définition.</p>
+<p>Solution: <code>--userns-remap=default</code> qui requiert un module dans le noyau Linux, <code>CONFIG_USER_NS</code>.</p>
+Disponible depuis Docker 1.10.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="plus-de-sécurité">Plus de sécurité</h3>
+<ul>
+<li class="fragment"><a href="https://github.com/docker/docker-bench-security">Docker Bench for Security</a></li>
+<li class="fragment">AppArmor (SuSE, Ubuntu)</li>
+<li class="fragment">SELinux (NSA, Red Hat, CentOS, etc.)</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="inter-container-communication"><em>Inter-Container Communication</em></h2>
+<figure>
+<img src="images/icc.png" />
+</figure>
+<aside class="notes">
+<p>Par défaut, deux containers peuvent communiquer entre eux.</p>
+Source: <a href="https://bloglaurel.com/illustrations-for-docker./36">Laurel</a>
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="icc-suite">ICC (suite)</h3>
+<p>Désactiver globalement la communication entre conteneurs.</p>
+<div class="sourceCode"><pre class="sourceCode apache"><code class="sourceCode apache"><span class="co"># /etc/systemd/system/docker.service</span>
+
+[Config]
+ExecStart=/usr/bin/docker daemon --icc=false ...</code></pre></div>
+<aside class="notes">
+Ceci est recommandé.
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="créer-un-réseau">Créer un réseau</h2>
+<pre class="console"><code>$ docker network create mynet
+
+$ docker network connect mynet demo
+
+$ docker run -it \
+             --net=mynet \
+             alpine:3.4 \
+             /bin/sh</code></pre>
+<aside class="notes">
+Par défaut, c'est <em>bridge</em>.
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="créer-un-volume">Créer un volume</h2>
+<pre><code>docker volume create --name myvolume
+
+docker run -it --rm \
+           --volume myvolume:/data \
+           alpine:3.4 /bin/sh
+
+docker run -it --rm \
+           -v myvolume:/data:ro \
+           alpine:3.4 /bin/sh</code></pre>
+<aside class="notes">
+<p>E.g. une base de données, un site web (nginx vs php-fpm), etc.</p>
+Plugins : GlusterFS, GCE, Contiv (Ceph), etc.
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="tour-dʼhorizon">Tour dʼhorizon</h2>
+</section>
+<section class="slide level1">
+
+<h3 id="coreos-rkt">CoreOS rkt</h3>
+<pre class="console"><code>$ rkt run --insecure-options=image \
+          docker://alpine:3.4 \
+          --exec=/bin/sh \
+          --interactive</code></pre>
+<aside class="notes">
+<p>Une image docker peut-être exécutée non plus via <code>runc</code> mais <code>rkt</code>, une autre spécification (appc vs oci).</p>
+Utilisé par Blablacar, notamment.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="canonical-lxd-lxc">Canonical LXD (LXC)</h3>
+<pre><code>$ lxc launch images:alpine/3.4/amd64 alpine
+$ lxc exec alpine -- /bin/sh</code></pre>
+<aside class="notes">
+<p>Historiquement Docker et CoreOS utilisaient LXC. Remplacé par <code>runC</code> et <code>rkt</code> depuis. LXD est la réponse de Canonical. Support notable de CRIU pour des migrations en live.</p>
+Il y a également <a href="https://seanmcgary.com/posts/run-docker-containers-with-systemd-nspawn">systemd-nspawn</a>
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="le-cloud">Le <em>“Cloud”</em></h3>
+<ul>
+<li class="fragment">Amazon (Xen)</li>
+<li class="fragment">Citrix Cloud.com (Xen)</li>
+<li class="fragment">Google Compute Engine (KVM)</li>
+<li class="fragment">Microsoft Azure (Hyper-V)</li>
+<li class="fragment">Digital Ocean (KVM)</li>
+<li class="fragment">Samsung Joyent (SmartOS)</li>
+<li class="fragment">Verizon (VMware)</li>
+<li class="fragment">Heroku (LXC)</li>
+<li class="fragment">Infomaniak (KVM)</li>
+<li class="fragment">HE-Arc (OpenVZ)</li>
+</ul>
+<aside class="notes">
+SmartOS (Joyent, Samsung) = illumos (OpenSolaris) + KVM.
+</aside>
+</section>
+<section id="mi-temps" class="slide level1">
+<h1>mi-temps</h1>
+</section>
+<section class="slide level1">
+
+<h2 id="problèmes-actuels">Problèmes actuels</h2>
+<ol type="1">
+<li class="fragment">Systèmes découplés</li>
+<li class="fragment">Itérations rapides</li>
+<li class="fragment">Environnement hétérogène</li>
+<li class="fragment">Montée en charge horizontale</li>
+</ol>
+</section>
+<section class="slide level1">
+
+<h2 id="créer-un-système-découplé">Créer un système découplé</h2>
+<pre class="console"><code>docker run -d \
+           --publish-all \
+           --name php \
+           php:7.0-apache
+
+docker cp index.php php:/var/www/html</code></pre>
+<aside class="notes">
+<p>Téléchargement et exécution d'une image <a href="https://hub.docker.com/_/php/">PHP préconstruite</a>.</p>
+Les ports sont exportés de manière aléatoire.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="ajout-de-redis">Ajout de Redis</h3>
+<pre><code>docker exec -it php bash
+
+# pecl install redis
+# docker-php-ext-enable redis
+# apache2ctl restart</code></pre>
+<aside class="notes">
+Rafraichir le <code>phpinfo</code> va montrer que Redis est à présent là.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="dockerfile"><code>Dockerfile</code></h3>
+<pre class="docker"><code>FROM php:7.0-apache
+
+RUN pecl install redis \
+ &amp;&amp; docker-php-ext-enable redis
+
+COPY index.php /var/www/html</code></pre>
+<p>Construction d'une image.</p>
+<pre><code>docker build -t myapp .</code></pre>
+<aside class="notes">
+Notre nouvelle image ajoute deux couches à l'image de base.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="index.php"><code>index.php</code></h3>
+<div class="sourceCode"><pre class="sourceCode php"><code class="sourceCode php"><span class="kw">&lt;?php</span>
+<span class="kw">$redis</span> = <span class="kw">new</span> Redis<span class="ot">();</span>
+<span class="kw">$redis</span>-&gt;connect<span class="ot">(</span><span class="st">&#39;redis&#39;</span><span class="ot">);</span>
+<span class="kw">$redis</span>-&gt;incr<span class="ot">(</span><span class="st">&#39;test&#39;</span><span class="ot">);</span>
+
+<span class="fu">echo</span> <span class="kw">$redis</span>-&gt;get<span class="ot">(</span><span class="st">&#39;test&#39;</span><span class="ot">);</span></code></pre></div>
+<p>Mise-à-jour de notre image.</p>
+<pre><code>docker build -t myapp .</code></pre>
+<aside class="notes">
+Notre ancienne image a disparu de notre liste. Il est néanmoins possible de la retagguer à volonté.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="redis">Redis</h3>
+<pre><code>docker run -d \
+           --name redis \
+           redis:3.2-alpine
+
+docker run -dP \
+           --link redis \
+           --name php \
+           myapp</code></pre>
+<aside class="notes">
+<p>Malgré <code>--icc=false</code>, les ports ouverts de <code>redis</code> ont été ouverts dans <code>php</code> et seulement ceux-là.</p>
+<pre><code>/ # ping -c 3 redis
+/ # apk --no-cache add nmap
+/ # nmap -p1-6400 redis</code></pre>
+</aside>
+</section>
+<section class="slide level1">
+
+<h2 id="docker-compose">Docker-compose</h2>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">version:</span> <span class="st">&#39;2&#39;</span>
+<span class="fu">services:</span>
+  <span class="fu">php:</span>
+    <span class="fu">image:</span> myapp
+    <span class="fu">links:</span>
+      <span class="kw">-</span> redis
+    <span class="fu">ports:</span>
+      <span class="kw">-</span> <span class="fu">80:</span>80
+  <span class="fu">redis:</span>
+    <span class="fu">image:</span> redis:3.2-alpine</code></pre></div>
+<p>Exécution</p>
+<pre class="console"><code>docker-compose up</code></pre>
+<aside class="notes">
+<code>-d</code> permet de lancer docker-compose en arrière plan.
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="reconstruire">(re)construire</h3>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">services:</span>
+  <span class="fu">php:</span>
+    <span class="fu">image:</span> myapp
+    <span class="fu">build:</span> .</code></pre></div>
+<p>Mise à jour.</p>
+<pre class="console"><code>docker-compose build
+docker-compose up frontend</code></pre>
+</section>
+<section class="slide level1">
+
+<figure>
+<img src="images/bingo.jpg" />
+</figure>
+<aside class="notes">
+Préparez vos cartes!
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="scalabilité-horizontale">Scalabilité horizontale</h3>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">frontend:</span>
+  <span class="fu">image:</span> dockercloud/haproxy
+  <span class="fu">links:</span>
+    <span class="kw">-</span> php
+  <span class="fu">ports:</span>
+    <span class="kw">-</span> <span class="fu">80:</span>80
+  <span class="fu">volumes:</span>
+    <span class="kw">-</span> <span class="fu">/var/run/docker.sock:</span>/var/run/docker.sock</code></pre></div>
+<p>Go big!</p>
+<pre><code>docker-compose scale php=2</code></pre>
+</section>
+<section class="slide level1">
+
+<h2 id="distribution">Distribution</h2>
+<ul>
+<li class="fragment">Docker Swarm (1.12)</li>
+<li class="fragment">Kubernetes (Google)</li>
+<li class="fragment">Amazon EC2 Container Service</li>
+<li class="fragment">Apache Mesos (Berkeley)</li>
+<li class="fragment">CoreOS (Google Ventures)</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="futur">Futur</h2>
+<ul>
+<li class="fragment"><a href="https://devblogs.nvidia.com/parallelforall/nvidia-docker-gpu-server-application-deployment-made-easy/">Docker + CUDA</a></li>
+<li class="fragment"><a href="https://www.containerd.tools/">containerd</a></li>
+<li class="fragment"><a href="https://unikernel.org/">Unikernel</a></li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="lectures">Lectures</h2>
+<ul>
+<li class="fragment"><a href="http://prakhar.me/docker-curriculum/">Docker Curriculum</a>, Prakhar Srivastav</li>
+<li class="fragment"><a href="http://www.slideshare.net/jpetazzo">Slideshare</a>, Jérôme Petazzoni</li>
+<li class="fragment"><a href="https://medium.com/@lherrera/life-and-death-of-a-container-146dfc62f808">Life and death of a container</a>, Luis Herrera Benítez</li>
+<li class="fragment"><a href="http://www.slideshare.net/ctankersley/docker-for-php-developers-jetbrains">Docker for PHP Developers</a>, Chris Tankersley</li>
+</ul>
+</section>
+<section id="end" class="slide level1">
+<h1>End</h1>
+</section>
+<section class="slide level1">
+
+<ul>
+<li class="fragment">https://medium.com/google-cloud/docker-swarm-on-google-cloud-platform-c9925bd7863c</li>
+<li class="fragment">https://blog.docker.com/2013/08/containers-docker-how-secure-are-they/</li>
+<li class="fragment">https://blog.docker.com/2016/02/docker-engine-1-10-security/</li>
+<li class="fragment">https://blog.jessfraz.com/post/docker-containers-on-the-desktop/</li>
+<li class="fragment">https://www.linux.com/news/containers-vs-hypervisors-choosing-best-virtualization-technology</li>
+</ul>
+<!-- begin: header.html -->
+<style>
+.reveal { font-size: 28pt }
+.reveal pre { background-color: #090909; }
+.reveal pre code { font-size: 150%; line-height: 1.2 }
+.reveal section img { border: 0 none; background-color: transparent; box-shadow: 0 0 0; }
+
+.sourceCode span.kw,
+.sourceCode span.ot { color: #9fc; }
+.sourceCode span.st,
+.sourceCode span.fu { color: #9cf; }
+</style>
+<!-- end: header.html -->
+</section>
+    </div>
+  </div>
+
+  <script src="./lib/js/head.min.js"></script>
+  <script src="./js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: false,
+        // Push each slide change to the browser history
+        history: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: './lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: './plugin/zoom-js/zoom.js', async: true },
+          { src: './plugin/notes/notes.js', async: true },
+              { src: './socket.io/socket.io.js', async: true },
+          { src: './plugin/notes-server/client.js', async: true },
+            ]
+      });
+    </script>
+    </body>
+</html>
