@@ -2,7 +2,7 @@
 title: Atelier Docker
 author:
  - Yoan Blanc <code>yoan@dosimple.ch</code>
-date: 2016-08-15
+date: mardi 16 août 2016, Saint-Imier
 lang: fr
 ---
 
@@ -83,12 +83,12 @@ demo:/# ls -l /
 
 ```shell
 demo:/# uname -r
-4.6.4-1-ARCH
+4.7.0-1-ARCH
 
 (Ctrl-p Ctrl-q)
 
 $ uname -a
-4.6.4-1-ARCH
+4.7.0-1-ARCH
 ```
 
 <aside class="notes">
@@ -189,7 +189,6 @@ driver](https://docs.docker.com/engine/userguide/storagedriver/selectadriver/))
 
 Chaque conteneur possède une petite couche modifiable par dessus les couches
 existantes. Ceci permet de démarrer quasiment instantanément des instances.
-
 </aside>
 
 ---
@@ -255,7 +254,7 @@ docker images
 ```
 
 <aside class=notes>
-`docker push` permet d'envoyer l'image sur Docker hub (ou un autre _registry_).
+`docker push` permet d'envoyer l'image sur Docker Hub (ou un autre _registry_).
 </aside>
 
 ---
@@ -305,7 +304,7 @@ docker run --rm \
 ```
 
 <aside class="notes">
-`SYS_TIME` permettrait d'avoir `ntp`.
+`SYS_TIME` permettrait d'avoir `ntp`, par exemple.
 </aside>
 
 ---
@@ -315,8 +314,7 @@ docker run --rm \
 Masquage de certains _sys calls_.
 
 ```console
-demo:/# apk update \
-     && apk add keyutils
+demo:/# apk add --no-cache keyutils
 
 demo:/# keyctl session
 
@@ -739,7 +737,7 @@ docker-compose scale php=2
 * [Docker Curriculum](http://prakhar.me/docker-curriculum/), Prakhar Srivastav
 * [Slideshare](http://www.slideshare.net/jpetazzo), Jérôme Petazzoni
 * [Understanding and Hardening Linux Containers](https://www.nccgroup.trust/globalassets/our-research/us/whitepapers/2016/april/ncc_group_understanding_hardening_linux_containers-10pdf/)
-* [Run containres on bare metal already!](https://www.youtube.com/watch?v=coFIEH3vXPw)
+* [Run containers on bare metal already!](https://www.youtube.com/watch?v=coFIEH3vXPw)
 * [Life and death of a container](https://medium.com/@lherrera/life-and-death-of-a-container-146dfc62f808), Luis Herrera Benítez
 * [Docker for PHP Developers](http://www.slideshare.net/ctankersley/docker-for-php-developers-jetbrains), Chris Tankersley
 
@@ -754,5 +752,6 @@ docker-compose scale php=2
 * https://blog.docker.com/2016/02/docker-engine-1-10-security/
 * https://blog.jessfraz.com/post/docker-containers-on-the-desktop/
 * https://www.linux.com/news/containers-vs-hypervisors-choosing-best-virtualization-technology
+* http://rhelblog.redhat.com/2016/10/17/secure-your-containers-with-this-one-weird-trick/
 
 -->
